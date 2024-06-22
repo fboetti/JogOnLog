@@ -1,0 +1,21 @@
+services:
+  database:
+    build:
+      context: "./database"
+      dockerfile: "Dockerfile"
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    env_file:
+      - "./database/postgres.env"
+    volumes:
+      - database_volume:/var/lib/postgresql/data
+    container_name: "jogonlog_database"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+
+volumes:
+  database_volume:
