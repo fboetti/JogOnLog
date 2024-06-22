@@ -1,5 +1,6 @@
 services:
   database:
+    container_name: "jogonlog_database"
     build:
       context: "./database"
       dockerfile: "Dockerfile"
@@ -10,12 +11,38 @@ services:
       - "./database/postgres.env"
     volumes:
       - database_volume:/var/lib/postgresql/data
-    container_name: "jogonlog_database"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "1"
+    networks:
+      - jogonlog_web_proxy
+
+  backend:
+    container_name: "jogonlog_backend"
+    image: "jogonlog_backend:dev"
+    build:
+      context: "./backend"
+      dockerfile: "Dockerfile"
+    ports:
+    - "8000:8000"
+    volumes:
+    - ./backend:/usr/src/backend
+    networks:
+      - jogonlog_web_proxy
+
+  proxy:
+    container_name: "jogonlog_proxy"
+    image: "jogonlog_proxy:dev"
+    build:
+      context: "./web_proxy"
+      dockerfile: "Dockerfile"
+    ports:
+      - '8080:80'
+    networks:
+      - jogonlog_web_proxy
+    depends_on:
+      - backend
+
+networks:
+  jogonlog_web_proxy:
+    driver: bridge
 
 volumes:
   database_volume:
