@@ -6,11 +6,9 @@ from sqlalchemy import (
     create_engine,
     Engine,
 )
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
     sessionmaker,
     Session,
-    DeclarativeBase,
 )
 # -- Backend Package Imports -- #
 from src.core import (
@@ -21,21 +19,10 @@ from src.core import (
 __all__ = [
     "get_database_url_from_settings",
     "get_database_session_from_settings",
-    "get_sqlalchemy_base",
 ]
 
 
 # -- Private Classes & Methods -- #
-
-class DeclarativeBaseSingleton:
-    _instance: typing.Optional[typing.Type[DeclarativeBase]] = None
-
-    @classmethod
-    def get_instance(cls) -> typing.Type[DeclarativeBase]:
-        if cls._instance is None:
-            cls._instance = declarative_base()
-        return cls._instance
-
 
 def _get_engine_from_database_url(
         database_url: str,
@@ -61,7 +48,7 @@ def _get_session_maker_from_engine(
 def get_database_url_from_settings() -> str:
     """
     Function to get the database URL from the backend settings.
-    FIXME: Check why DepInjection doesn't work here.
+    FIXME: Check why dependency injection doesn't work here.
     """
     backend_settings: BackendSettings = get_settings()
     return backend_settings.get_database_connection_string()
@@ -80,10 +67,3 @@ def get_database_session_from_settings(
         yield session
     finally:
         session.close()
-
-
-def get_sqlalchemy_base() -> typing.Type[DeclarativeBase]:
-    """
-    Singleton function to get the DeclarativeBase instance for the database.
-    """
-    return DeclarativeBaseSingleton.get_instance()

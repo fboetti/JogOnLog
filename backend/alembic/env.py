@@ -12,10 +12,9 @@ from alembic import context
 # -- Backend Package Imports -- #
 from src.core import (
     get_database_url_from_settings,
-    get_sqlalchemy_base,
     DatabaseSchemas,
 )
-# This "unused" import is instead required to include the API models in the migration environment.
+# This import from api.models is instead required to include the API models in the migration environment.
 from src.api.models import *
 
 # this is the Alembic Config object, which provides
@@ -37,7 +36,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-backend_metadata = get_sqlalchemy_base().metadata
+backend_metadata = SqlAlchemyBase.metadata
 target_metadata = MetaData()
 
 
@@ -48,8 +47,8 @@ target_metadata = MetaData()
 
 schemas_to_include: typing.List[str] = [
     None,  # None is the "public" schema
-    DatabaseSchemas.DATA_ENTRY.value,
-    DatabaseSchemas.PRESENTATION.value,
+    DatabaseSchemas.data_entry.value,
+    DatabaseSchemas.presentation.value,
 ]
 
 # Add tables to the target metadata

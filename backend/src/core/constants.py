@@ -10,5 +10,5 @@ class DatabaseSchemas(enum.Enum):
     """
     Enumerates the available database schemas for the JogOnLog application.
     """
-    DATA_ENTRY: str = "data_entry"
-    PRESENTATION: str = "presentation"
+    data_entry: str = "data_entry"
+    presentation: str = "presentation"
