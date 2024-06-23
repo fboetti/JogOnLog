@@ -27,7 +27,7 @@ def _populate_env(
         values: dict,
 ) -> None:
     for key, value in values.items():
-        os.environ[key] = value
+        os.environ[key] = str(value)
 
 
 def _env_init_from_file() -> None:

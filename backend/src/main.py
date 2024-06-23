@@ -1,9 +1,11 @@
-from fastapi import FastAPI
-
+# -- Backend Requirements Imports -- #
+from fastapi import (
+    FastAPI,
+)
 # -- Backend Package Imports -- #
 from src.core import (
-    BackendSettings,
     get_settings,
+    BackendSettings,
 )
 
 settings: BackendSettings = get_settings()
