@@ -6,6 +6,7 @@ from sqlalchemy import (
     engine_from_config,
     pool,
     schema,
+    MetaData,
 )
 from alembic import context
 # -- Backend Package Imports -- #
@@ -14,6 +15,8 @@ from src.core import (
     get_sqlalchemy_base,
     DatabaseSchemas,
 )
+# This "unused" import is instead required to include the API models in the migration environment.
+from src.api.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -34,7 +37,9 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = get_sqlalchemy_base().metadata
+backend_metadata = get_sqlalchemy_base().metadata
+target_metadata = MetaData()
+
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -42,33 +47,15 @@ target_metadata = get_sqlalchemy_base().metadata
 # ... etc.
 
 schemas_to_include: typing.List[str] = [
-    None,                                           # None is the "public" schema
+    None,  # None is the "public" schema
     DatabaseSchemas.DATA_ENTRY.value,
     DatabaseSchemas.PRESENTATION.value,
 ]
 
-
-def _check_whether_to_include_object(
-        name: typing.Union[str, None],
-        type_: typing.Literal["schema", "table", "column", "index", "unique_constraint", "foreign_key_constraint"],
-        info: typing.MutableMapping[
-            typing.Literal["schema_name", "table_name", "schema_qualified_table_name"], typing.Union[str, None]
-        ],
-) -> typing.Union[bool, None]:
-    """
-    This function is used to filter out tables that should not be included in the migration process.
-
-    :param name: the name of the database object involved
-    :param type_: the type of the database object involved (e.g. "table", "schema", ...)
-    :param info: a dictionary containing information about the database object involved
-    :return: boolean value indicating whether the object should be included in the migration process
-    """
-
-    if type_ == "schema":
-        return name in schemas_to_include
-    else:
-        # Tables are not filtered out at the moment.
-        return True
+# Add tables to the target metadata
+for table in backend_metadata.tables.values():
+    if table.schema in schemas_to_include:
+        table.to_metadata(target_metadata)
 
 
 def run_migrations_offline() -> None:
@@ -90,7 +77,6 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         compare_type=True,
         include_schemas=True,
-        include_name=_check_whether_to_include_object,
         dialect_opts={"paramstyle": "named"},
         transaction_per_migration=True,
     )
@@ -107,7 +93,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
@@ -123,12 +109,14 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             compare_type=True,
             include_schemas=True,
-            include_name=_check_whether_to_include_object,
             transaction_per_migration=True,
         )
 
         with context.begin_transaction():
             context.run_migrations()
+
+        connection.commit()
+        connection.close()
 
 
 if context.is_offline_mode():

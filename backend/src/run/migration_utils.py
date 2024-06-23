@@ -51,7 +51,7 @@ def handle_make_migrations(
 
 
 def handle_upgrade_migrations(
-        revision: str = "head",
+        revision: typing.Optional[str] = None,
 ) -> None:
     """
     Runs alembic migrations to latest version available if no revision is specified.
@@ -64,6 +64,10 @@ def handle_upgrade_migrations(
     if len(head_revisions_ids) > 1:
         _merge_procedure(head_revisions_ids)
 
+    if not revision:
+        # If no revision is specified, upgrade to the latest version.
+        revision = "head"
+
     print(f"\n📈  Migrations: upgrading to revision {revision}  📈\n")
     upgrade_argv = [
         "--raiseerr",
@@ -75,13 +79,18 @@ def handle_upgrade_migrations(
 
 
 def handle_downgrade_migrations(
-        revision: str = "-1",
+        revision: typing.Optional[str] = None,
 ) -> None:
     """
     Runs alembic migrations downgrade to the previous version if no revision is specified.
     Otherwise, runs alembic migration-downgrade until the specified revision.
     """
     print(f"\n📉  Migrations: downgrading to revision {revision}  📉\n")
+
+    if not revision:
+        # If no revision is specified, downgrade to the previous version.
+        revision = "-1"
+
     downgrade_argv = [
         "downgrade",
         revision,

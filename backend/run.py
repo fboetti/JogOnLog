@@ -26,15 +26,15 @@ def alembic(
     """
     if make:
         handle_make_migrations(message=make_message)
-        print("✅  Migration file created!  ✅")
+        print("✅  Migration file created!")
 
     if upgrade:
         handle_upgrade_migrations(revision=revision)
-        print("✅  Upgrade Done!  ✅")
+        print("✅  Upgrade Done!")
 
     if downgrade:
         handle_downgrade_migrations(revision=revision)
-        print("✅  Downgrade Done!  ✅")
+        print("✅  Downgrade Done!")
 
 
 @typer_app.command()
@@ -51,7 +51,7 @@ def run(
             print("📈 Running migrations upgrade...")
             handle_upgrade_migrations()
     except Exception as e:
-        print(f"❌  Error running migrations: {e}  ❌")
+        print(f"❌  Error running migrations: {e}")
 
     print("🚀 Starting backend...")
     uvicorn.run(
