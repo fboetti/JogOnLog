@@ -19,6 +19,7 @@ from src.core import (
 )
 
 __all__ = [
+    "get_database_url_from_settings",
     "get_database_session_from_settings",
     "get_sqlalchemy_base",
 ]
@@ -55,6 +56,16 @@ def _get_session_maker_from_engine(
 
 
 # -- Exposed Methods -- #
+
+
+def get_database_url_from_settings() -> str:
+    """
+    Function to get the database URL from the backend settings.
+    FIXME: Check why DepInjection doesn't work here.
+    """
+    backend_settings: BackendSettings = get_settings()
+    return backend_settings.get_database_connection_string()
+
 
 def get_database_session_from_settings(
         backend_settings: BackendSettings = Depends(get_settings),

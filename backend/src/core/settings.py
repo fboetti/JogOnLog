@@ -62,6 +62,6 @@ class BackendSettings(BaseSettings):
 
 
 @lru_cache()
-def get_settings():
+def get_settings() -> BackendSettings:
     _env_init_from_file()
     return BackendSettings()

@@ -10,6 +10,7 @@ from sqlalchemy import (
 from alembic import context
 # -- Backend Package Imports -- #
 from src.core import (
+    get_database_url_from_settings,
     get_sqlalchemy_base,
     DatabaseSchemas,
 )
@@ -17,6 +18,9 @@ from src.core import (
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Set the main option of the config object to the current database URL.
+config.set_main_option("sqlalchemy.url", get_database_url_from_settings())
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

@@ -12,4 +12,6 @@ EXPOSE 8000
 
 WORKDIR /usr/src/backend
 
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+ENTRYPOINT ["python", "run.py"]
+
+CMD ["run", "--reload", "--run-migrations"]
