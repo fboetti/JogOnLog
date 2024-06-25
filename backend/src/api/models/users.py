@@ -9,6 +9,10 @@ from sqlalchemy import (
     Integer,
     String,
 )
+from sqlalchemy.orm import (
+    relationship,
+    Mapped,
+)
 # -- Backend Package Imports -- #
 from src.core import DatabaseSchemas
 from src.api.models.base import (
@@ -22,6 +26,8 @@ __all__ = [
     "UserPydanticSchema",
 ]
 
+
+# -- ORM Models -- #
 
 class UserGender(enum.Enum):
     male: str = "male"
@@ -76,6 +82,15 @@ class User(SqlAlchemyBase):
         server_default="False",
     )
 
+    # Relationships
+    sport_activities: Mapped["User"] = relationship(
+        "SportActivity",
+        back_populates="user",
+        lazy="noload",
+    )
+
+
+# -- Pydantic Models -- #
 
 class UserPydanticSchema(PydanticBaseModel):
     id: int
