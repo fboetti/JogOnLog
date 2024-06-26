@@ -24,6 +24,7 @@ __all__ = [
     "User",
     "UserGender",
     "UserPydanticSchema",
+    "UserCreatePydanticSchema",
 ]
 
 
@@ -92,11 +93,14 @@ class User(SqlAlchemyBase):
 
 # -- Pydantic Models -- #
 
-class UserPydanticSchema(PydanticBaseModel):
-    id: int
+class UserCreatePydanticSchema(PydanticBaseModel):
     first_name: typing.Optional[str]
     last_name: typing.Optional[str]
     gender: typing.Optional[UserGender]
     birth_year: typing.Optional[int]
     email: str
-    banned_from_webapp: bool
+    banned_from_webapp: bool = False
+
+
+class UserPydanticSchema(UserCreatePydanticSchema):
+    id: int
