@@ -1,4 +1,5 @@
 # -- Pure Python Imports -- #
+import re
 import typing
 from logging.config import fileConfig
 # -- Backend Requirements Imports -- #
@@ -57,6 +58,41 @@ for table in backend_metadata.tables.values():
         table.to_metadata(target_metadata)
 
 
+def _exclude_partitioned_tables() -> typing.List[str]:
+    """
+    Computes patterns related to partitioned tables, which have to be excluded from the migration env.
+    At the moment are hardcoded, but in the future, they could be adopted a different system.
+    """
+    partitioned_tables: typing.List[str] = [
+        "sport_activities_p\\d+",
+        "sport_activities_default",
+    ]
+
+    return partitioned_tables
+
+
+def _include_name(
+        name: typing.Union[str, None],
+        type_: typing.Literal["schema", "table", "column", "index", "unique_constraint", "foreign_key_constraint"],
+        _,  # parent_names
+) -> bool:
+    """
+    Include the name of the table if:
+        - its schema is in the list of schemas to include.
+        - it is not a partitioned table.
+    """
+    partitioned_tables_patterns: re.Pattern = re.compile(
+        '|'.join(_exclude_partitioned_tables()),
+    )
+
+    if type_ == "schema":
+        return name in schemas_to_include
+    elif type_ == "table":
+        return not partitioned_tables_patterns.match(name)
+
+    return True
+
+
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
@@ -78,6 +114,7 @@ def run_migrations_offline() -> None:
         include_schemas=True,
         dialect_opts={"paramstyle": "named"},
         transaction_per_migration=True,
+        include_name=_include_name,
     )
 
     with context.begin_transaction():
@@ -109,6 +146,7 @@ def run_migrations_online() -> None:
             compare_type=True,
             include_schemas=True,
             transaction_per_migration=True,
+            include_name=_include_name,
         )
 
         with context.begin_transaction():

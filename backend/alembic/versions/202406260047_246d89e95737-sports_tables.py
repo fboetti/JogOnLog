@@ -32,11 +32,23 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id'),
         schema='data_entry'
     )
-    op.create_index(op.f('ix_data_entry_sports_id'), 'sports', ['id'], unique=False, schema='data_entry')
+    op.create_index(op.f('ix_data_entry_sports_id'), 'sports', ['id'], unique=True, schema='data_entry')
     op.create_index(op.f('ix_data_entry_sports_name'), 'sports', ['name'], unique=True, schema='data_entry')
 
+    op.execute(
+        """
+            create sequence if not exists data_entry.sport_activities_id_seq;
+        """
+    )
     op.create_table(
         'sport_activities',
+        sa.Column(
+            'id',
+            sa.Integer(),
+            autoincrement=True,
+            nullable=False,
+            server_default=sa.text('nextval(\'data_entry.sport_activities_id_seq\'::regclass)'),
+        ),
         sa.Column('id_sport', sa.Integer(), nullable=False),
         sa.Column('id_user', sa.Integer(), nullable=False),
         sa.Column('start_time', sa.DateTime(), nullable=False),
@@ -49,6 +61,7 @@ def upgrade() -> None:
         schema='data_entry',
         postgresql_partition_by='RANGE (start_time)'
     )
+    op.create_index(op.f('ix_data_entry_sport_activities_id'), 'sport_activities', ['id'], unique=False, schema='data_entry')
 
     op.execute(
         """

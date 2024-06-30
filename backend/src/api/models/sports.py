@@ -1,4 +1,5 @@
 # -- Pure Python Imports -- #
+import datetime
 import typing
 # -- Backend Requirements Imports -- #
 from sqlalchemy import (
@@ -9,6 +10,7 @@ from sqlalchemy import (
     String,
     PrimaryKeyConstraint,
     ForeignKey,
+    text,
 )
 from sqlalchemy.orm import (
     relationship,
@@ -28,7 +30,14 @@ from src.api.models.users import (
 
 __all__ = [
     "Sport",
+    "SportCreatePydanticSchema",
     "SportPydanticSchema",
+    "SportActivity",
+    "SportActivityCreatePydanticSchema",
+    "SportActivityPydanticSchema",
+    "SportActivityWithSportAndUserPydanticSchema",
+    "SportWithActivitiesPydanticSchema",
+    "UserPydanticSchemaWithSportActivities",
 ]
 
 
@@ -49,6 +58,7 @@ class Sport(SqlAlchemyBase):
         primary_key=True,
         index=True,
         autoincrement=True,
+        unique=True,
     )
     name: Column = Column(
         String,
@@ -93,6 +103,13 @@ class SportActivity(SqlAlchemyBase):
         },
     )
 
+    id: Column = Column(
+        Integer,
+        index=True,
+        autoincrement=True,
+        nullable=False,
+        server_default=text(f"nextval('{DatabaseSchemas.data_entry.value}.sport_activities_id_seq'::regclass)"),
+    )
     id_sport: Column = Column(
         Integer,
         ForeignKey(
@@ -144,28 +161,35 @@ class SportActivity(SqlAlchemyBase):
 
 # -- Pydantic Models -- #
 
-class SportPydanticSchema(PydanticBaseModel):
-    """
-    Pydantic schema for the Sport model.
-    """
-
-    id: int
+class SportCreatePydanticSchema(PydanticBaseModel):
     name: str
     kcal_per_hour: typing.Optional[float]
-    custom_properties: typing.Optional[typing.Dict[str, typing.Any]]
+    custom_properties: typing.Optional[
+        typing.Dict[
+            str,
+            typing.Literal["int", "float", "str", "bool"],
+        ]
+    ]
 
 
-class SportActivityPydanticSchema(PydanticBaseModel):
-    """
-    Pydantic schema for the SportActivity model.
-    """
+class SportPydanticSchema(SportCreatePydanticSchema):
+    id: int
+
+
+class SportActivityCreatePydanticSchema(PydanticBaseModel):
     id_sport: int
     id_user: int
-    start_time: int
-    end_time: int
+    start_time: datetime.datetime
+    end_time: datetime.datetime
     cost: typing.Optional[float]
     custom_properties: typing.Optional[typing.Dict[str, typing.Any]]
 
+
+class SportActivityPydanticSchema(SportActivityCreatePydanticSchema):
+    id: int
+
+
+class SportActivityWithSportAndUserPydanticSchema(SportActivityPydanticSchema):
     sport: SportPydanticSchema
     user: UserPydanticSchema
 
