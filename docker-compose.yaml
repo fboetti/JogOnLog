@@ -6,7 +6,7 @@ services:
       dockerfile: "Dockerfile"
     restart: unless-stopped
     ports:
-      - '5432:5432'
+      - "5432:5432"
     env_file:
       - "./database/postgres.env"
     volumes:
@@ -27,6 +27,20 @@ services:
     networks:
       - jogonlog_web_proxy
 
+  frontend:
+    container_name: "jogonlog_frontend"
+    image: "jogonlog_frontend:dev"
+    build:
+      context: "./frontend"
+      dockerfile: "Dockerfile"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src/frontend
+      - frontend_node_modules:/usr/src/frontend/node_modules
+    networks:
+      - jogonlog_web_proxy
+
   proxy:
     container_name: "jogonlog_proxy"
     image: "jogonlog_proxy:dev"
@@ -39,6 +53,7 @@ services:
       - jogonlog_web_proxy
     depends_on:
       - backend
+      - frontend
 
 networks:
   jogonlog_web_proxy:
@@ -46,3 +61,4 @@ networks:
 
 volumes:
   database_volume:
+  frontend_node_modules:
